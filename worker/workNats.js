@@ -55,7 +55,7 @@ async function sendOutput  (petition, result) {
   output.result = result;
 	const nc = await connect({ servers: [process.env.NATSIPADDR] });
 	// create a codec
-// create a simple subscriber and iterate over messages
+// crear un suscritor simple e iterar sobre los mensaje
 // matching the subscription
 
 	nc.publish(restopic, JSON.stringify(output));

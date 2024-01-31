@@ -1,0 +1,15 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "workNats.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Miguel, Jose, Nicolas, Nevil",
+  "license": "ISC",
+  "dependencies": {
+    "nats": "^2.19.0",
+    "shelljs": "^0.8.5"
+  }
+}

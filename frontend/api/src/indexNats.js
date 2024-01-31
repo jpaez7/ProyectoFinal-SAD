@@ -163,13 +163,52 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 //Nuestro primer WS Get
-app.get('/', (req, res) => {
+/*app.get('/', (req, res) => {
   res.json(
     {
       "Title": "API REST DE PETICIONES"
     }
   );
-})
+})*);*/
+
+app.get('/', (req, res) => {
+  // Respuesta HTML con un botón de inicio de sesión
+  const htmlResponse = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>API de Proyecto SAD</title>
+          <style>
+              .boton {
+                  display: inline-block;
+                  padding: 10px 20px;
+                  font-size: 16px;
+                  text-align: center;
+                  text-decoration: none;
+                  cursor: pointer;
+                  border: 1px solid #3498db;
+                  color: #3498db;
+                  background-color: #ffffff;
+                  border-radius: 5px;
+              }
+
+              .boton:hover {
+                  background-color: #3498db;
+                  color: #ffffff;
+              }
+          </style>
+      </head>
+      <body>
+          <h1>Arranque API</h1>
+          <a href="http://localhost:3000/login" class="boton">Iniciar sesión</a>
+      </body>
+      </html>
+  `;
+  
+  res.send(htmlResponse);
+});
 
 app.listen(app.get('port'), () => {
   console.log(`Server listening on port ${app.get('port')}`);

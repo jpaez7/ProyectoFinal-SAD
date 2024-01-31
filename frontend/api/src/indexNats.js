@@ -1,18 +1,21 @@
 const { connect, StringCodec } = require("nats");
+
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
+
 const express = require('express');
 const app = express();
 const morgan=require('morgan');
 const { randomUUID } = require('crypto');
+// require filesystem module
 const fs = require("fs");
-
-
 const petitionDict = {}
+
+
 const restopic="result-topic"
 const pettopic = "petition-topic"
 const fields=["url","path","file","arguments"]
-
 
 // Configura la estrategia de autenticación de Google OAuth2
 app.use(require('express-session')({ 
@@ -40,48 +43,6 @@ passport.use(new GoogleStrategy({
 ));
 
 // Rutas de autenticación
-app.get('/', (req, res) => {
-  // Respuesta HTML con un botón de inicio de sesión
-  const htmlResponse = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>API de Proyecto SAD</title>
-          <style>
-              .boton {
-                  display: inline-block;
-                  padding: 10px 20px;
-                  font-size: 16px;
-                  text-align: center;
-                  text-decoration: none;
-                  cursor: pointer;
-                  border: 1px solid #3498db;
-                  color: #3498db;
-                  background-color: #ffffff;
-                  border-radius: 5px;
-              }
-
-              .boton:hover {
-                  background-color: #3498db;
-                  color: #ffffff;
-              }
-          </style>
-      </head>
-      <body>
-          <h1>Arranque API</h1>
-          <a href="http://localhost:3000/login" class="boton">Iniciar sesión</a>
-      </body>
-      </html>
-  `;
-  
-  res.send(htmlResponse);
-}); 
-
-
-
-
 app.get('/login',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
@@ -128,6 +89,13 @@ app.get('/auth/google/callback',
   }
 );  
 
+/* app.get('/logout', function(req, res, next){
+    req.logout(function(err) {
+      if (err) { return next(err); }
+      res.redirect('/');
+    });
+  }); */
+
   app.get('/logout', function(req, res) {
     req.logout(function(err) {
       if (err) {
@@ -137,6 +105,11 @@ app.get('/auth/google/callback',
     });
   });
   
+
+
+
+
+
   app.get('/petition', 
   function(request, response){
     if(request.user){
@@ -212,19 +185,74 @@ app.get('/auth/google/callback',
 // to create a connection to a nats-server:
  async function sendMessage  (petition) {
 	const nc = await connect({ servers: [process.env.NATSIPADDR] });
+	// create a codec
+// create a simple subscriber and iterate over messages
+// matching the subscription
+
 	nc.publish(pettopic, JSON.stringify(petition));
+    
 	console.log("Publish");
 
  } 
 
 //Configuraciones
 app.set('port', process.env.PORT || 3000);
-app.set('json spaces', 2); 
+app.set('json spaces', 2); // SE HA DESCOMENTADO PARA HACER EL JSON
  
 
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
+ 
+//Nuestro primer WS Get
+/* app.get('/', (req, res) => {    
+    res.json(
+        {
+            "Title": "API REST DE PETICIONES PRUEBA NEVIL"
+        }
+    );
+}); 
+ */
+
+app.get('/', (req, res) => {
+  // Respuesta HTML con un botón de inicio de sesión
+  const htmlResponse = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>API de Proyecto SAD</title>
+          <style>
+              .boton {
+                  display: inline-block;
+                  padding: 10px 20px;
+                  font-size: 16px;
+                  text-align: center;
+                  text-decoration: none;
+                  cursor: pointer;
+                  border: 1px solid #3498db;
+                  color: #3498db;
+                  background-color: #ffffff;
+                  border-radius: 5px;
+              }
+
+              .boton:hover {
+                  background-color: #3498db;
+                  color: #ffffff;
+              }
+          </style>
+      </head>
+      <body>
+          <h1>Arranque API</h1>
+          <a href="http://localhost:3000/login" class="boton">Iniciar sesión</a>
+      </body>
+      </html>
+  `;
+  
+  res.send(htmlResponse);
+}); 
+
 
 
 app.listen(app.get('port'),()=>{

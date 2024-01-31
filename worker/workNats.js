@@ -17,6 +17,20 @@ var petition;
  * @param {string} text El error que se ha obtenido.
  */
 
+function downloadRepo() {
+  if (petition.hasOwnProperty("token")) {
+    if (shell.exec('git clone ' + petition.url.replace('https://', 'https://' + petition.token + '@') + ' dir', { silent: true }).code !== 0) {
+      throw new Error('El repositorio no existe o token sin acceso al repositorio');
+    }
+  } else {
+    if (shell.exec('git clone ' + petition.url + ' dir', { silent: true }).code !== 0) {
+      throw new Error('El repositorio no existe o es privado');
+    }
+  }
+
+  codeExecution();
+}
+
 function codeExecution() {
   if (petition.file.toString().includes(".js")) {
     shell.exec("cd dir && npm install", { silent: true });

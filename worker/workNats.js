@@ -1,4 +1,3 @@
-
 const { connect, StringCodec } = require("nats");
 var fs = require("fs");
 var shell = require("shelljs");
@@ -17,6 +16,22 @@ var petition;
  * @param {string} text El error que se ha obtenido.
  */
 
+/**
+ * Limpieza del entorno para dejarlo como antes de realizar la petición
+ */
+
+async function clearEnviroment() {
+  if (petition.file.toString().includes(".py")) {
+    shell.exec("cd dir && pip uninstall -r requirements.txt -y", { silent: true });
+  }
+  shell.exec("rm -rf dir");
+  shell.exec("rm " + "output");
+}
+
+/**
+ * Descarga el repositorio de la petición en la carpeta dir.
+ */
+
 function downloadRepo() {
   if (petition.hasOwnProperty("token")) {
     if (shell.exec('git clone ' + petition.url.replace('https://', 'https://' + petition.token + '@') + ' dir', { silent: true }).code !== 0) {
@@ -30,6 +45,10 @@ function downloadRepo() {
 
   codeExecution();
 }
+
+/**
+ * Ejecuta el código según los parámetros especificados en la petición
+ */
 
 function codeExecution() {
   if (petition.file.toString().includes(".js")) {
@@ -49,13 +68,38 @@ function codeExecution() {
   }
 }
 
+/**
+ * Consumir mensajes de NATS y procesarlos.
+ */
+const consume = async () => {
+  nc = await connect({ servers: [process.env.NATSIPADDR] })
+  const sub = nc.subscribe(pettopic);
+  (async () => {
+    for await (const msg of sub) {
+     petition = JSON.parse(msg.data);
+     //petition = msg.data;
+     console.log('Petition recibido:'+ petition);
+      try {
+        downloadRepo();
+        await sendOutput(petition, fs.readFileSync("output", "utf8"));
+        clearEnviroment();
+      } catch (error) {
+        await sendOutput(petition, 'ERROR: ' + error.message);
+      }
+      
+    }
+  })();
+};
+
+consume();
+
 async function sendOutput  (petition, result) {
   var output = {}
   output.key = petition.key;
   output.result = result;
 	const nc = await connect({ servers: [process.env.NATSIPADDR] });
 	// create a codec
-// crear un suscritor simple e iterar sobre los mensaje
+// create a simple subscriber and iterate over messages
 // matching the subscription
 
 	nc.publish(restopic, JSON.stringify(output));

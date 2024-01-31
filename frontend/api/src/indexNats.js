@@ -105,11 +105,6 @@ app.get('/auth/google/callback',
     });
   });
   
-
-
-
-
-
   app.get('/petition', 
   function(request, response){
     if(request.user){
@@ -135,7 +130,6 @@ app.get('/auth/google/callback',
     }
 	
   });
-
 
   app.get('/result/',
    (req, res) => {
@@ -166,7 +160,6 @@ app.get('/auth/google/callback',
     }
    
   })
-
 
   function deletePetition(id){
     console.log("FILE REMOVED "+id)

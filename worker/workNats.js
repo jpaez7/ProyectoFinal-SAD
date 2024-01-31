@@ -2,11 +2,12 @@ const { connect, StringCodec } = require("nats");
 var fs = require("fs");
 var shell = require("shelljs");
 
-
+//const nc = await connect({ servers: [process.env.NATSIPADDR] });
 var nc;
 const pettopic = "petition-topic";
 const restopic = "result-topic";
 const sc = StringCodec();
+
 var petition;
 
 /**
@@ -16,8 +17,9 @@ var petition;
  */
 
 /**
- * Limpieza del entorno
+ * Limpieza del entorno para dejarlo como antes de realizar la petición
  */
+
 async function clearEnviroment() {
   if (petition.file.toString().includes(".py")) {
     shell.exec("cd dir && pip uninstall -r requirements.txt -y", { silent: true });
@@ -29,6 +31,7 @@ async function clearEnviroment() {
 /**
  * Descarga el repositorio de la petición en la carpeta dir.
  */
+
 function downloadRepo() {
   if (petition.hasOwnProperty("token")) {
     if (shell.exec('git clone ' + petition.url.replace('https://', 'https://' + petition.token + '@') + ' dir', { silent: true }).code !== 0) {
@@ -46,6 +49,7 @@ function downloadRepo() {
 /**
  * Ejecuta el código según los parámetros especificados en la petición
  */
+
 function codeExecution() {
   if (petition.file.toString().includes(".js")) {
     shell.exec("cd dir && npm install", { silent: true });
@@ -73,6 +77,7 @@ const consume = async () => {
   (async () => {
     for await (const msg of sub) {
      petition = JSON.parse(msg.data);
+     //petition = msg.data;
      console.log('Petición recibida:'+ JSON.stringify(petition));
       try {
         downloadRepo();
@@ -93,8 +98,15 @@ async function sendOutput  (petition, result) {
   output.key = petition.key;
   output.result = result;
 	const nc = await connect({ servers: [process.env.NATSIPADDR] });
+	// create a codec
+// create a simple subscriber and iterate over messages
+// matching the subscription
+
 	nc.publish(restopic, JSON.stringify(output));
     
+	//nc.publish("petition-topic", sc.encode("again"));
 	console.log("Publish");
 
- }
+ } 
+
+ 

@@ -1,4 +1,32 @@
 
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
+// Configura la estrategia de autenticación de Google OAuth2
+app.use(require('express-session')({ 
+    secret: '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', resave: true, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
+  
+  passport.deserializeUser(function(user, done) {
+    done(null, user);
+  });
+
+passport.use(new GoogleStrategy({
+    clientID: '160606129404-pboj2bcrgs7ghrc5uipcuueecjpfbni8.apps.googleusercontent.com',
+    clientSecret: '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',
+    callbackURL: 'http://localhost:3000/auth/google/callback'
+  },
+  (accessToken, refreshToken, profile, done) => {
+    // Aquí puedes realizar acciones con el perfil del usuario
+    return done(null, profile);
+  }
+));
+
 const consume = async () => {
   nc = await connect({ servers: [process.env.NATSIPADDR] })
   const sub = nc.subscribe(restopic);

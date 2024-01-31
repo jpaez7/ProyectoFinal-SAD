@@ -1,3 +1,21 @@
+const { connect, StringCodec } = require("nats");
+var fs = require("fs");
+var shell = require("shelljs");
+
+//const nc = await connect({ servers: [process.env.NATSIPADDR] });
+var nc;
+const pettopic = "petition-topic";
+const restopic = "result-topic";
+const sc = StringCodec();
+
+var petition;
+
+/**
+ * Enviar el error que ha detenido la ejecución de la petición.
+ * @param {number} uuid El identificador de la petición a responder.
+ * @param {string} text El error que se ha obtenido.
+ */
+
 function codeExecution() {
     if (petition.file.toString().includes(".js")) {
       shell.exec("cd dir && npm install", { silent: true });

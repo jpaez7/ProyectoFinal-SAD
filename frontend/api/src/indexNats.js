@@ -46,6 +46,49 @@ const consume = async () => {
 
 consume();
 
+passport.use(new GoogleStrategy({
+  clientID: '160606129404-pboj2bcrgs7ghrc5uipcuueecjpfbni8.apps.googleusercontent.com',
+  clientSecret: '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',
+  callbackURL: 'http://localhost:3000/auth/google/callback'
+},
+(accessToken, refreshToken, profile, done) => {
+  // Aquí puedes realizar acciones con el perfil del usuario
+  return done(null, profile);
+}
+));
+
+// Rutas de autenticación
+app.get('/login',
+passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+passport.authenticate('google', { failureRedirect: '/login' }),
+(req, res) => {
+  // Autenticación exitosa, redirecciona o responde según sea necesario
+  res.send('Autenticación exitosa');
+}
+);
+
+app.get('/logout', function(req, res, next){
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
+});
+
+app.get('/petition', 
+function(request, response){
+  if(request.user){
+    var resp= JSON.parse(JSON.stringify(request.query));     // your JSON
+    for (const property in fields) {
+      //Se comprueba el formato de la petición
+      if(!resp.hasOwnProperty(fields[property])){
+        response.send("ERROR en el formato de la petición: No se ha encontrado el campo "+fields[property]); 
+        return
+      }
+    }
+
 //Se asigna un identificador aleatorio a la petición, este será el id de consulta y se devuelve al usuario
 id = randomUUID()
 petitionDict[id] = true;

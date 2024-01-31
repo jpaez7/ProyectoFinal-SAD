@@ -104,7 +104,60 @@ response.send(mensaje);
 
 });
 
+app.get('/result/',
+   (req, res) => {
+    if(req.user){
+      if(petitionDict.hasOwnProperty(req.query.id)){
+        fs.access('./result/'+req.query.id, (error) => {
+          //  Si no se encuentra el archivo , la petición se sigue procesando
+          if (error) {
+          
+          res.json(
+            {
+              "ERROR": "LA PETICIÓN SE SIGUE PROCESANDO"
+            }
+          );
+          return;
+          }
+          //enviar el resultado de la petición
+          fs.createReadStream('./result/'+req.query.id).pipe(res);
+          setTimeout(deletePetition, 30*60*1000, req.query.id)
+        }); 
+      }
+      else{
+        res.json({"ERROR": "NO HAY PETICIÓN CON ESE ID"})
+      }  
 
+    } else{
+      res.json({"ERROR": "No se ha iniciado sesión"})
+    }
+   
+  })
+
+function deletePetition(id){
+    console.log("FILE REMOVED "+id)
+    delete petitionDict[id];
+    fs.unlink('./result/'+id, (error) => {
+      if (error) {
+      console.log(error);
+      return;
+      }
+    });	
+  }
+
+// to create a connection to a nats-server:
+ async function sendMessage  (petition) {
+	const nc = await connect({ servers: [process.env.NATSIPADDR] });
+	// create a codec
+// create a simple subscriber and iterate over messages
+// matching the subscription
+
+	nc.publish(pettopic, JSON.stringify(petition));
+    
+	console.log("Publish");
+
+ } 
+ 
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

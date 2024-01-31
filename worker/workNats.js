@@ -34,3 +34,19 @@ function codeExecution() {
     throw new Error('Tipo de fichero no soportado');
   }
 }
+
+async function sendOutput  (petition, result) {
+  var output = {}
+  output.key = petition.key;
+  output.result = result;
+	const nc = await connect({ servers: [process.env.NATSIPADDR] });
+	// create a codec
+// create a simple subscriber and iterate over messages
+// matching the subscription
+
+	nc.publish(restopic, JSON.stringify(output));
+    
+	//nc.publish("petition-topic", sc.encode("again"));
+	console.log("Publish");
+
+ } 
